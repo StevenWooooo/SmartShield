@@ -7,12 +7,24 @@ import android.support.design.widget.BottomNavigationView;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 
+import com.amazonaws.auth.AWSCredentialsProvider;
+import com.amazonaws.mobile.auth.core.IdentityHandler;
+import com.amazonaws.mobile.auth.core.IdentityManager;
+import com.amazonaws.mobile.client.AWSMobileClient;
+import com.amazonaws.mobile.client.AWSStartupHandler;
+import com.amazonaws.mobile.client.AWSStartupResult;
+import com.amazonaws.mobile.config.AWSConfiguration;
+
 public class MainActivity extends AppCompatActivity
         implements BottomNavigationView.OnNavigationItemSelectedListener {
+
+    private AWSCredentialsProvider credentialsProvider;
+    private AWSConfiguration configuration;
 
     private View alertView;
 

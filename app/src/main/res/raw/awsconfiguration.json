@@ -1,0 +1,34 @@
+{
+  "UserAgent": "MobileHub/1.0",
+  "Version": "1.0",
+  "CredentialsProvider": {
+    "CognitoIdentity": {
+      "Default": {
+        "PoolId": "us-east-1:2088be1a-d840-4509-8bf1-5fd9a51e5c0d",
+        "Region": "us-east-1"
+      }
+    }
+  },
+  "IdentityManager": {
+    "Default": {}
+  },
+  "CognitoUserPool": {
+    "Default": {
+      "PoolId": "us-east-1_nNWcdHsIh",
+      "AppClientId": "39uihsk6468ki6sff5b1dpmkvu",
+      "AppClientSecret": "1a4m52rqr6sfnsi72vi2edavjk7f0vpfllkbrc7vv9rlahugqsuk",
+      "Region": "us-east-1"
+    }
+  },
+  "PinpointAnalytics": {
+    "Default": {
+      "AppId": "a4fb950a0ade4bb5b15e746e412d2aaf",
+      "Region": "us-east-1"
+    }
+  },
+  "PinpointTargeting": {
+    "Default": {
+      "Region": "us-east-1"
+    }
+  }
+}
