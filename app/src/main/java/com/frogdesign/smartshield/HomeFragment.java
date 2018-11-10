@@ -10,9 +10,9 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 
 import com.github.mikephil.charting.charts.LineChart;
-import com.github.mikephil.charting.components.YAxis;
 import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.data.LineData;
 import com.github.mikephil.charting.data.LineDataSet;
@@ -49,6 +49,13 @@ public class HomeFragment extends Fragment {
 //                }
 //            }
 //        });
+
+        String strtext = getArguments().getString("traffic");
+        TextView test = view.findViewById(R.id.test_seg);
+        test.setText("fqyuevouqbevbyq");
+
+
+        // Line chart
         LineChart chart = (LineChart) view.findViewById(R.id.chart);
         float[][] dataObjects = new float[10][2];
         for (int i = 0; i < 10; ++i) {

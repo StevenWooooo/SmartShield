@@ -69,10 +69,17 @@
                         android:layout_height="wrap_content">
 
                         <TextView
-                            android:id="@+id/release"
+                        android:id="@+id/release"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Network Activity"
+                        android:textAppearance="@style/TextAppearance.AppCompat.Title" />
+
+                        <!--TEST SEGMENT-->
+                        <TextView
+                            android:id="@+id/test_seg"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:text="Network Activity"
                             android:textAppearance="@style/TextAppearance.AppCompat.Title" />
 
                         <com.github.mikephil.charting.charts.LineChart
