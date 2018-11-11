@@ -1,9 +1,16 @@
 package com.frogdesign.smartshield;
 
+import android.app.NotificationChannel;
 import android.app.NotificationManager;
+import android.app.PendingIntent;
+import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.graphics.drawable.ColorDrawable;
+import android.graphics.drawable.Drawable;
+import android.graphics.drawable.LayerDrawable;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -11,6 +18,8 @@ import android.support.annotation.NonNull;
 import android.support.design.widget.BottomNavigationView;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.NotificationCompat;
+import android.support.v4.app.NotificationManagerCompat;
+import android.support.v4.view.ViewPager;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
@@ -42,8 +51,16 @@ import allbegray.slack.webhook.SlackWebhookClient;
 public class MainActivity extends AppCompatActivity
         implements BottomNavigationView.OnNavigationItemSelectedListener {
 
-    private View alertView;
+    // private View alertView;
+    private Menu defaultMenu;
+
     Fragment homeFragment;
+    Fragment devicesFragment;
+    Fragment usersFragment;
+
+    private  ViewPager viewPager;
+    private MenuItem prevMenuItem;
+    private BottomNavigationView navigation;
 
     private Handler mHandler;
 
@@ -52,19 +69,19 @@ public class MainActivity extends AppCompatActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-//        android.support.v7.widget.Toolbar toolbar = findViewById(R.id.toolbar_top);
-//        setSupportActionBar(toolbar);
+        createNotificationChannel();
+
         ActionBar actionBar = getSupportActionBar();
         actionBar.setTitle("SmartShield");
 
         actionBar.setBackgroundDrawable(new ColorDrawable(getResources().getColor(R.color.colorSafe)));
         actionBar.setHomeButtonEnabled(true);
 
-        BottomNavigationView navigation = findViewById(R.id.navigation);
+        navigation = findViewById(R.id.navigation);
         navigation.setOnNavigationItemSelectedListener(this);
 
         LayoutInflater inflater = LayoutInflater.from(getApplicationContext());
-        alertView = inflater.inflate(R.layout.alert_item, null);
+        // alertView = inflater.inflate(R.layout.alert_item, null);
 
         AWSMobileClient.getInstance().initialize(this).execute();
 
@@ -72,66 +89,148 @@ public class MainActivity extends AppCompatActivity
 
         runSlack();
 
-        Bundle bundle = new Bundle();
-        bundle.putString("traffic", "From Activity blabla");
+//        Bundle bundle = new Bundle();
+//        bundle.putString("traffic", "From Activity blabla");
+//        homeFragment.setArguments(bundle);
+        viewPager = findViewById(R.id.fragment_container);
+        setupViewPager(viewPager);
 
+        sendNotification();
+
+    }
+
+    private void setupViewPager(ViewPager viewPager)
+    {
+        ViewPagerAdapter adapter = new ViewPagerAdapter(getSupportFragmentManager());
         homeFragment = new HomeFragment();
-        homeFragment.setArguments(bundle);
+        devicesFragment = new DevicesFragment();
+        usersFragment = new UsersFragment();
+        adapter.addFragment(homeFragment);
+        adapter.addFragment(devicesFragment);
+        adapter.addFragment(usersFragment);
+        viewPager.setAdapter(adapter);
 
-        loadFragment(homeFragment);
+        viewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
+            @Override
+            public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
+
+            }
+
+            @Override
+            public void onPageSelected(int position) {
+                if (prevMenuItem != null)
+                    prevMenuItem.setChecked(false);
+                else
+                    navigation.getMenu().getItem(0).setChecked(false);
+
+                navigation.getMenu().getItem(position).setChecked(true);
+                prevMenuItem = navigation.getMenu().getItem(position);
+            }
+
+            @Override
+            public void onPageScrollStateChanged(int state) {
+
+            }
+        });
+    }
+
+    public void openNotificationActivity() {
+        Intent intent = new Intent(this, NotificationActivity.class);
+        startActivity(intent);
+        overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
+    }
+
+    public void setCount(Context context, String count) {
+        MenuItem menuItem = defaultMenu.findItem(R.id.notification_button);
+        LayerDrawable icon = (LayerDrawable) menuItem.getIcon();
+
+        CountDrawable badge;
+
+        // Reuse drawable if possible
+        Drawable reuse = icon.findDrawableByLayerId(R.id.ic_count);
+        if (reuse != null && reuse instanceof CountDrawable) {
+            badge = (CountDrawable) reuse;
+        } else {
+            badge = new CountDrawable(context);
+        }
+
+        badge.setCount(count);
+        icon.mutate();
+        icon.setDrawableByLayerId(R.id.ic_count, badge);
+    }
+
+    @Override
+    public boolean onPrepareOptionsMenu(Menu menu) {
+        setCount(this, "9");
+        return true;
     }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
+        defaultMenu = menu;
         getMenuInflater().inflate(R.menu.main_menu, menu);
         return true;
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
 
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_favorite) {
-            Toast.makeText(MainActivity.this, "Action clicked", Toast.LENGTH_LONG).show();
+        if (id == R.id.notification_button) {
+//            Toast.makeText(MainActivity.this, "Action clicked", Toast.LENGTH_LONG).show();
+            openNotificationActivity();
             return true;
         }
 
         return super.onOptionsItemSelected(item);
     }
 
-    public void sendNotification(View view) {
+    /*
+    * Notification
+    **/
+    private final String CHANNEL_ID = "default";
+    private void createNotificationChannel() {
+        // Create the NotificationChannel, but only on API 26+ because
+        // the NotificationChannel class is new and not in the support library
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            CharSequence name = getString(R.string.channel_name);
+            String description = getString(R.string.channel_description);
+            int importance = NotificationManager.IMPORTANCE_DEFAULT;
+            NotificationChannel channel = new NotificationChannel(CHANNEL_ID, name, importance);
+            channel.setDescription(description);
+            // Register the channel with the system; you can't change the importance
+            // or other notification behaviors after this
+            NotificationManager notificationManager = getSystemService(NotificationManager.class);
+            notificationManager.createNotificationChannel(channel);
+        }
+    }
+
+    public void sendNotification() {
+
+        // Create an explicit intent for an Activity in your app
+        Intent intent = new Intent(this, MainActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent, 0);
 
         //Get an instance of NotificationManager//
-
         NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(this, CHANNEL_ID)
-                .setSmallIcon(R.drawable.);
-                .setContentTitle(textTitle)
-                .setContentText(textContent)
-                .setPriority(NotificationCompat.PRIORITY_DEFAULT);
+                .setSmallIcon(R.drawable.ic_notifications_black_24dp)
+                .setContentTitle("Alert Alert")
+                .setStyle(new NotificationCompat.BigTextStyle()
+                        .bigText("Telegram:\n" +
+                                "New login. Dear Marisha, we detected a login into your account from a new device on 07/11/2018 at 15:55:21 UTC.\n" +
+                                "\n" +
+                                "Device: Desktop\n" +
+                                "Location: New York, United States (IP = 128.84.95.121)"))
+                .setPriority(NotificationCompat.PRIORITY_HIGH)
+                .setCategory(NotificationCompat.CATEGORY_ALARM)
+                .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
+                .setContentIntent(pendingIntent)
+                .setAutoCancel(true);
 
-
-        // Gets an instance of the NotificationManager service//
-
-        NotificationManager mNotificationManager =
-
-                (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-
-        // When you issue multiple notifications about the same type of event,
-        // it’s best practice for your app to try to update an existing notification
-        // with this new information, rather than immediately creating a new notification.
-        // If you want to update this notification at a later date, you need to assign it an ID.
-        // You can then use this ID whenever you issue a subsequent notification.
-        // If the previous notification is still visible, the system will update this existing notification,
-        // rather than create a new one. In this example, the notification’s ID is 001//
-
-        NotificationManager.notify().
-
-                mNotificationManager.notify(001, mBuilder.build());
+        NotificationManagerCompat mNotificationManager = NotificationManagerCompat.from(this);
+        mNotificationManager.notify(001, mBuilder.build());
     }
 
 
@@ -212,11 +311,19 @@ public class MainActivity extends AppCompatActivity
                 });
 
                 mRtmClient.connect();
-                // mWebApiClient.postMessage("sandbox", "Hello from Android");
+                mWebApiClient.postMessage("sandbox", "Hello from Android");
+                try {
+                    Thread.sleep(5000);
+                } catch (InterruptedException e) {
+                    return;
+                }
+                mWebApiClient.postMessage("sandbox", "Hello from Android");
                 Looper.loop();
             }
         }).start();
     }
+
+
 
     private boolean loadFragment(Fragment fragment) {
         if (fragment != null) {
@@ -231,60 +338,72 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
-        Fragment fragment = null;
         switch (menuItem.getItemId()) {
             case R.id.navigation_activity:
-                fragment = homeFragment;
+                viewPager.setCurrentItem(0);
                 break;
             case R.id.navigation_devices:
-                fragment = new DevicesFragment();
+                viewPager.setCurrentItem(1);
                 break;
             case R.id.navigation_users:
-                fragment = new UsersFragment();
-                break;
-            case R.id.navigation_more:
-                //fragment = new MoreFragment();
-
-                final AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
-                alertDialogBuilder.setMessage("Suspicious activity")
-                        .setCancelable(false)
-                        .setNegativeButton("Check", new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                // loadFragment(new AlertFragment());
-
-                                alertDialogBuilder.setMessage("An unusual activity detected.\nIP address: 124.56.78.110\nLocation: New York, NY")
-                                        .setView(alertView)
-                                        .setCancelable(false)
-                                        .setNegativeButton("Block user's access", new DialogInterface.OnClickListener() {
-                                            @Override
-                                            public void onClick(DialogInterface dialog, int which) {
-                                                dialog.cancel();
-                                            }
-                                        })
-                                        .setPositiveButton("Dismiss", new DialogInterface.OnClickListener() {
-                                            @Override
-                                            public void onClick(DialogInterface dialog, int which) {
-                                                dialog.cancel();
-                                            }
-                                        });
-                                AlertDialog alert1 = alertDialogBuilder.create();
-                                alert1.setTitle("AT RISK");
-                                alert1.show();
-
-                            }
-                        })
-                        .setPositiveButton("Dismiss", new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                dialog.cancel();
-                            }
-                        });
-                AlertDialog alert = alertDialogBuilder.create();
-                alert.setTitle("ALERT!");
-                alert.show();
+                viewPager.setCurrentItem(2);
                 break;
         }
-        return loadFragment(fragment);
+        return false;
+//        Fragment fragment = null;
+//        switch (menuItem.getItemId()) {
+//            case R.id.navigation_activity:
+//                fragment = homeFragment;
+//                break;
+//            case R.id.navigation_devices:
+//                fragment = new DevicesFragment();
+//                break;
+//            case R.id.navigation_users:
+//                fragment = new UsersFragment();
+//                break;
+//            case R.id.navigation_more:
+//                //fragment = new MoreFragment();
+//
+//                final AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
+//                alertDialogBuilder.setMessage("Suspicious activity")
+//                        .setCancelable(false)
+//                        .setNegativeButton("Check", new DialogInterface.OnClickListener() {
+//                            @Override
+//                            public void onClick(DialogInterface dialog, int which) {
+//                                // loadFragment(new AlertFragment());
+//
+//                                alertDialogBuilder.setMessage("An unusual activity detected.\nIP address: 124.56.78.110\nLocation: New York, NY")
+//                                        .setView(alertView)
+//                                        .setCancelable(false)
+//                                        .setNegativeButton("Block user's access", new DialogInterface.OnClickListener() {
+//                                            @Override
+//                                            public void onClick(DialogInterface dialog, int which) {
+//                                                dialog.cancel();
+//                                            }
+//                                        })
+//                                        .setPositiveButton("Dismiss", new DialogInterface.OnClickListener() {
+//                                            @Override
+//                                            public void onClick(DialogInterface dialog, int which) {
+//                                                dialog.cancel();
+//                                            }
+//                                        });
+//                                AlertDialog alert1 = alertDialogBuilder.create();
+//                                alert1.setTitle("AT RISK");
+//                                alert1.show();
+//
+//                            }
+//                        })
+//                        .setPositiveButton("Dismiss", new DialogInterface.OnClickListener() {
+//                            @Override
+//                            public void onClick(DialogInterface dialog, int which) {
+//                                dialog.cancel();
+//                            }
+//                        });
+//                AlertDialog alert = alertDialogBuilder.create();
+//                alert.setTitle("ALERT!");
+//                alert.show();
+//                break;
+//        }
+//        return loadFragment(fragment);
     }
 }

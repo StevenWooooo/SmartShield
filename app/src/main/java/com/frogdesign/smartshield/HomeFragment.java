@@ -47,9 +47,9 @@ public class HomeFragment extends Fragment {
 
         View view = inflater.inflate(R.layout.fragment_home, null);
 
-        String strtext = getArguments().getString("traffic");
-        TextView test = view.findViewById(R.id.test_seg);
-        //test.setText(strtext);
+//        String strtext = getArguments().getString("traffic");
+//        TextView test = view.findViewById(R.id.test_seg);
+//        test.setText(strtext);
 
 
         initDevices();

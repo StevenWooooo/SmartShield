@@ -5,7 +5,7 @@
     android:layout_height="wrap_content"
     android:fitsSystemWindows="true">
 
-    <android.support.v4.widget.NestedScrollView
+    <ScrollView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         app:layout_behavior="@string/appbar_scrolling_view_behavior">
@@ -82,20 +82,32 @@
 
                         </android.support.v7.widget.RecyclerView>
 
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="100dp"
+                            android:text="blabla\nblabla\nblabla\nblabla\nblabla\nblabla\nblabla\nblabla\nblabla\nblabla\nblabla\nblabla\nblabla\nblabla\nblabla\nblabla\nblabla\nblabla\nblabla\nblabla\nblabla\nblabla\nblabla\nblabla\n\n"/>
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="100dp"
+                            android:text="blabla\nblabla\nblabla\nblabla\nblabla\nblabla\nblabla\nblabla\nblabla\nblabla\nblabla\nblabla\nblabla\nblabla\nblabla\nblabla\nblabla\nblabla\nblabla\nblabla\nblabla\nblabla\nblabla\nblabla\n\n"/>
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="100dp"
+                            android:text="blabla\nblabla\nblabla\nblabla\nblabla\nblabla\nblabla\nblabla\nblabla\nblabla\nblabla\nblabla\nblabla\nblabla\nblabla\nblabla\nblabla\nblabla\nblabla\nblabla\nblabla\nblabla\nblabla\nblabla\n\n"/>
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="100dp"
+                            android:text="blabla\nblabla\nblabla\nblabla\nblabla\nblabla\nblabla\nblabla\nblabla\nblabla\nblabla\nblabla\nblabla\nblabla\nblabla\nblabla\nblabla\nblabla\nblabla\nblabla\nblabla\nblabla\nblabla\nblabla\n\n"/>
+
                     </LinearLayout>
 
                 </android.support.v7.widget.CardView>
 
-                <android.support.v7.widget.CardView
-                    android:layout_width="match_parent"
-                    android:layout_height="55dp">
-
-                </android.support.v7.widget.CardView>
 
             </LinearLayout>
 
         </LinearLayout>
 
-    </android.support.v4.widget.NestedScrollView>
+    </ScrollView>
 
 </android.support.design.widget.CoordinatorLayout>
