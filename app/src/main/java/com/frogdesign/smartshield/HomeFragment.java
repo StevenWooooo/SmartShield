@@ -7,15 +7,22 @@ import android.support.design.widget.AppBarLayout;
 import android.support.design.widget.CollapsingToolbarLayout;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.github.mikephil.charting.charts.LineChart;
+import com.github.mikephil.charting.components.AxisBase;
+import com.github.mikephil.charting.components.XAxis;
+import com.github.mikephil.charting.components.YAxis;
 import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.data.LineData;
 import com.github.mikephil.charting.data.LineDataSet;
+import com.github.mikephil.charting.formatter.IAxisValueFormatter;
 import com.github.mikephil.charting.interfaces.datasets.ILineDataSet;
 
 import java.util.ArrayList;
@@ -24,75 +31,79 @@ import java.util.List;
 
 public class HomeFragment extends Fragment {
 
+    private List<String> names = new ArrayList<>();
+    private List<String> imageUrls = new ArrayList<>();
+
+    void initDevices() {
+        for (int i = 0; i < 10; ++i) {
+            names.add("MacBook Pro" + i);
+            imageUrls.add("https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ2mWFoSbenRKHNP8Akv75PTExe88EmDMLDuuv1HNkTION4pGadOw");
+        }
+    }
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
 
         View view = inflater.inflate(R.layout.fragment_home, null);
-//        final CollapsingToolbarLayout collapsingToolbarLayout = (CollapsingToolbarLayout) view.findViewById(R.id.collapsing_toolbar);
-//        AppBarLayout appBarLayout = (AppBarLayout) view.findViewById(R.id.app_bar_layout);
-//        appBarLayout.addOnOffsetChangedListener(new AppBarLayout.OnOffsetChangedListener() {
-//            boolean isShow = true;
-//            int scrollRange = -1;
-//
-//            @Override
-//            public void onOffsetChanged(AppBarLayout appBarLayout, int verticalOffset) {
-//                if (scrollRange == -1) {
-//                    scrollRange = appBarLayout.getTotalScrollRange();
-//                }
-//                if (scrollRange + verticalOffset == 0) {
-//                    collapsingToolbarLayout.setTitle("Title");
-//                    isShow = true;
-//                } else if(isShow) {
-//                    collapsingToolbarLayout.setTitle("Titleeee");//carefull there should a space between double quote otherwise it wont work
-//                    isShow = false;
-//                }
-//            }
-//        });
 
         String strtext = getArguments().getString("traffic");
         TextView test = view.findViewById(R.id.test_seg);
-        test.setText("fqyuevouqbevbyq");
+        //test.setText(strtext);
+
+
+        initDevices();
+        LinearLayoutManager layoutManager = new LinearLayoutManager(view.getContext(), LinearLayoutManager.HORIZONTAL, false);
+        RecyclerView recyclerView = view.findViewById(R.id.recycler_devices);
+        recyclerView.setLayoutManager(layoutManager);
+        DevicesRecyclerViewAdapter adapter = new DevicesRecyclerViewAdapter(view.getContext(), names, imageUrls);
+        recyclerView.setAdapter(adapter);
+
 
 
         // Line chart
-        LineChart chart = (LineChart) view.findViewById(R.id.chart);
-        float[][] dataObjects = new float[10][2];
+        LineChart mLineChart = view.findViewById(R.id.chart);
+
+        List<Entry> valsComp1 = new ArrayList<Entry>();
+        List<Entry> valsComp2 = new ArrayList<Entry>();
         for (int i = 0; i < 10; ++i) {
-            dataObjects[i][0] = i;
-            dataObjects[i][0] = 2 + (i % 2 == 1 ? 1 : -1);
+            valsComp1.add(new Entry(i, 100000f + (i % 2 == 0 ? 5000f : -5000f)));
+        }
+        for (int i = 0; i < 10; ++i) {
+            valsComp2.add(new Entry(i, 100000f + (i % 2 == 0 ? -5000f : 5000f)));
         }
 
-        List<Entry> entries = new ArrayList<>();
-
-        for (float[] data : dataObjects) {
-            entries.add(new Entry(data[0], data[1]));
-        }
-
-        LineDataSet dataSet = new LineDataSet(entries, "Label");
-        //dataSet.setAxisDependency(YAxis.AxisDependency.LEFT);
-        dataSet.setColor(777777);
-        //dataSet.setValueTextColor(); // styling, ...
-
+        LineDataSet setComp1 = new LineDataSet(valsComp1, "Wyze");
+        LineDataSet setComp2 = new LineDataSet(valsComp2, "MacBook Pro");
         List<ILineDataSet> dataSets = new ArrayList<ILineDataSet>();
-        dataSets.add(dataSet);
+        dataSets.add(setComp1);
+        dataSets.add(setComp2);
 
-        LineData lineData = new LineData(dataSets);
-        chart.setData(lineData);
-        chart.invalidate(); // refresh
+        LineData data = new LineData(dataSets);
+        mLineChart.setData(data);
+
+        // the labels that should be drawn on the XAxis
+        final String[] quarters = new String[10];
+        for (int i = 0; i < 10; ++i) {
+            quarters[i] = "Q" + i;
+        }
+        IAxisValueFormatter formatter = new IAxisValueFormatter() {
+            @Override
+            public String getFormattedValue(float value, AxisBase axis) {
+                return quarters[(int) value];
+            }
+        };
+
+        XAxis xAxis = mLineChart.getXAxis();
+        xAxis.setGranularity(1f); // minimum axis-step (interval) is 1
+        xAxis.setValueFormatter(formatter);
+
+        mLineChart.invalidate(); // refresh
 
 
-        return inflater.inflate(R.layout.fragment_home, null);
+
+
+
+        return view;
     }
-
-//    @Override
-//    public void onResume() {
-//        super.onResume();
-//        ((AppCompatActivity)getActivity()).getSupportActionBar().hide();
-//    }
-//    @Override
-//    public void onStop() {
-//        super.onStop();
-//        ((AppCompatActivity)getActivity()).getSupportActionBar().show();
-//    }
 }

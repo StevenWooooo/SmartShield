@@ -1,6 +1,8 @@
 package com.frogdesign.smartshield;
 
+import android.app.NotificationManager;
 import android.content.DialogInterface;
+import android.graphics.drawable.ColorDrawable;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
@@ -8,18 +10,20 @@ import android.os.Looper;
 import android.support.annotation.NonNull;
 import android.support.design.widget.BottomNavigationView;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.NotificationCompat;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Toast;
+import android.widget.Toolbar;
 
 import com.amazonaws.mobile.client.AWSMobileClient;
 import com.fasterxml.jackson.databind.JsonNode;
-
-
-import java.io.IOException;
 
 import allbegray.slack.SlackClientFactory;
 import allbegray.slack.bot.SlackbotClient;
@@ -48,6 +52,20 @@ public class MainActivity extends AppCompatActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+//        android.support.v7.widget.Toolbar toolbar = findViewById(R.id.toolbar_top);
+//        setSupportActionBar(toolbar);
+        ActionBar actionBar = getSupportActionBar();
+        actionBar.setTitle("SmartShield");
+
+        actionBar.setBackgroundDrawable(new ColorDrawable(getResources().getColor(R.color.colorSafe)));
+        actionBar.setHomeButtonEnabled(true);
+
+        BottomNavigationView navigation = findViewById(R.id.navigation);
+        navigation.setOnNavigationItemSelectedListener(this);
+
+        LayoutInflater inflater = LayoutInflater.from(getApplicationContext());
+        alertView = inflater.inflate(R.layout.alert_item, null);
+
         AWSMobileClient.getInstance().initialize(this).execute();
 
         mHandler = new Handler();
@@ -60,14 +78,62 @@ public class MainActivity extends AppCompatActivity
         homeFragment = new HomeFragment();
         homeFragment.setArguments(bundle);
 
-        BottomNavigationView navigation = findViewById(R.id.navigation);
-        navigation.setOnNavigationItemSelectedListener(this);
-
-        LayoutInflater inflater = LayoutInflater.from(getApplicationContext());
-        alertView = inflater.inflate(R.layout.alert_item, null);
-
         loadFragment(homeFragment);
     }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        getMenuInflater().inflate(R.menu.main_menu, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        // Handle action bar item clicks here. The action bar will
+        // automatically handle clicks on the Home/Up button, so long
+        // as you specify a parent activity in AndroidManifest.xml.
+        int id = item.getItemId();
+
+        //noinspection SimplifiableIfStatement
+        if (id == R.id.action_favorite) {
+            Toast.makeText(MainActivity.this, "Action clicked", Toast.LENGTH_LONG).show();
+            return true;
+        }
+
+        return super.onOptionsItemSelected(item);
+    }
+
+    public void sendNotification(View view) {
+
+        //Get an instance of NotificationManager//
+
+        NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(this, CHANNEL_ID)
+                .setSmallIcon(R.drawable.);
+                .setContentTitle(textTitle)
+                .setContentText(textContent)
+                .setPriority(NotificationCompat.PRIORITY_DEFAULT);
+
+
+        // Gets an instance of the NotificationManager service//
+
+        NotificationManager mNotificationManager =
+
+                (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+
+        // When you issue multiple notifications about the same type of event,
+        // it’s best practice for your app to try to update an existing notification
+        // with this new information, rather than immediately creating a new notification.
+        // If you want to update this notification at a later date, you need to assign it an ID.
+        // You can then use this ID whenever you issue a subsequent notification.
+        // If the previous notification is still visible, the system will update this existing notification,
+        // rather than create a new one. In this example, the notification’s ID is 001//
+
+        NotificationManager.notify().
+
+                mNotificationManager.notify(001, mBuilder.build());
+    }
+
 
     void runSlack() {
         new Thread(new Runnable() {
@@ -146,7 +212,7 @@ public class MainActivity extends AppCompatActivity
                 });
 
                 mRtmClient.connect();
-                mWebApiClient.postMessage("sandbox", "Hello from Android");
+                // mWebApiClient.postMessage("sandbox", "Hello from Android");
                 Looper.loop();
             }
         }).start();
