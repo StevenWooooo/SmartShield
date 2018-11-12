@@ -3,18 +3,13 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    android:padding="10dp"
     android:fitsSystemWindows="true">
-
-    <ScrollView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical">
-
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -22,92 +17,59 @@
                 android:orientation="vertical"
                 android:paddingTop="1dp">
 
-                <android.support.v7.widget.CardView
+                <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_margin="1dp">
+                    android:padding="10dp"
+                    android:gravity="center"
+                    android:text="Network Activity"
+                    android:textAppearance="@style/TextAppearance.AppCompat.Title" />
 
-                    <LinearLayout
-                        style="@style/Widget.CardContent"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content">
+                <com.github.mikephil.charting.charts.LineChart
+                    android:id="@+id/chart"
+                    android:layout_width="match_parent"
+                    android:layout_height="256dp" />
 
-                        <TextView
-                        android:id="@+id/release"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:text="Network Activity"
-                        android:textAppearance="@style/TextAppearance.AppCompat.Title" />
-
-                        <!--TEST SEGMENT-->
-                        <TextView
-                            android:id="@+id/test_seg"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:textAppearance="@style/TextAppearance.AppCompat.Title" />
-
-                        <com.github.mikephil.charting.charts.LineChart
-                            android:id="@+id/chart"
-                            android:layout_width="match_parent"
-                            android:layout_height="200dp" />
-
-                    </LinearLayout>
-
-                </android.support.v7.widget.CardView>
-
-                <android.support.v7.widget.CardView
+                <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_margin="1dp">
-
-                    <LinearLayout
-                        style="@style/Widget.CardContent"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content">
-
-                        <TextView
-                            android:id="@+id/platform"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:layout_marginBottom="10dp"
-                            android:text="Users &amp; Devices"
-                            android:textAppearance="@style/TextAppearance.AppCompat.Title" />
-
-                        <android.support.v7.widget.RecyclerView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:id="@+id/recycler_devices"
-                            android:orientation="horizontal">
+                    android:gravity="center"
+                    android:text="@string/chart_title"/>
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:text="@string/explanation"
+                    android:textSize="10dp"/>
+                <TextView
+                    android:id="@+id/learn_more"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="right"
+                    android:text="@string/learn_more"
+                    android:textSize="10dp"
+                    />
 
 
-                        </android.support.v7.widget.RecyclerView>
+                <TextView
+                    android:id="@+id/platform"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:padding="10dp"
+                    android:gravity="center"
+                    android:text="Current Devices"
+                    android:textAppearance="@style/TextAppearance.AppCompat.Title" />
 
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="100dp"
-                            android:text="blabla\nblabla\nblabla\nblabla\nblabla\nblabla\nblabla\nblabla\nblabla\nblabla\nblabla\nblabla\nblabla\nblabla\nblabla\nblabla\nblabla\nblabla\nblabla\nblabla\nblabla\nblabla\nblabla\nblabla\n\n"/>
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="100dp"
-                            android:text="blabla\nblabla\nblabla\nblabla\nblabla\nblabla\nblabla\nblabla\nblabla\nblabla\nblabla\nblabla\nblabla\nblabla\nblabla\nblabla\nblabla\nblabla\nblabla\nblabla\nblabla\nblabla\nblabla\nblabla\n\n"/>
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="100dp"
-                            android:text="blabla\nblabla\nblabla\nblabla\nblabla\nblabla\nblabla\nblabla\nblabla\nblabla\nblabla\nblabla\nblabla\nblabla\nblabla\nblabla\nblabla\nblabla\nblabla\nblabla\nblabla\nblabla\nblabla\nblabla\n\n"/>
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="100dp"
-                            android:text="blabla\nblabla\nblabla\nblabla\nblabla\nblabla\nblabla\nblabla\nblabla\nblabla\nblabla\nblabla\nblabla\nblabla\nblabla\nblabla\nblabla\nblabla\nblabla\nblabla\nblabla\nblabla\nblabla\nblabla\n\n"/>
+                <android.support.v7.widget.RecyclerView
+                    android:id="@+id/recycler_devices"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
 
-                    </LinearLayout>
-
-                </android.support.v7.widget.CardView>
-
+                </android.support.v7.widget.RecyclerView>
 
             </LinearLayout>
 
         </LinearLayout>
-
-    </ScrollView>
 
 </android.support.design.widget.CoordinatorLayout>
