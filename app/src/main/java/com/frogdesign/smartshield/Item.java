@@ -4,7 +4,6 @@ public class Item {
     int id;
     String name;
     String description;
-    double price;
     String thumbnail;
 
     public Item() {
@@ -32,14 +31,6 @@ public class Item {
 
     public void setDescription(String description) {
         this.description = description;
-    }
-
-    public double getPrice() {
-        return price;
-    }
-
-    public void setPrice(double price) {
-        this.price = price;
     }
 
     public String getThumbnail() {

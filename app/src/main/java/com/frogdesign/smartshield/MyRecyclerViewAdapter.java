@@ -7,18 +7,26 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+import android.widget.Toast;
+
+import com.bumptech.glide.Glide;
 
 import java.util.List;
+
+import de.hdodenhof.circleimageview.CircleImageView;
 
 public class MyRecyclerViewAdapter extends RecyclerView.Adapter<MyRecyclerViewAdapter.ViewHolder> {
     private List<String> mData;
     private LayoutInflater mInflater;
     private ItemClickListener mClickListener;
 
+    private Context context;
+
     // data is passed into the constructor
     MyRecyclerViewAdapter(Context context, List<String> data) {
         this.mInflater = LayoutInflater.from(context);
         this.mData = data;
+        this.context = context;
     }
 
     // inflates the row layout from xml when needed
@@ -31,8 +39,18 @@ public class MyRecyclerViewAdapter extends RecyclerView.Adapter<MyRecyclerViewAd
     // binds the data to the TextView in each row
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
-        String animal = mData.get(position);
-        holder.myTextView.setText(animal);
+        String device = mData.get(position);
+        Glide.with(context)
+                .asBitmap()
+                .load("https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ2mWFoSbenRKHNP8Akv75PTExe88EmDMLDuuv1HNkTION4pGadOw")
+                .into(holder.myImage);
+        holder.myTextView.setText(device);
+        holder.myImage.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Toast.makeText(context, device, Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
     // total number of rows
@@ -44,10 +62,12 @@ public class MyRecyclerViewAdapter extends RecyclerView.Adapter<MyRecyclerViewAd
 
     // stores and recycles views as they are scrolled off screen
     public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
+        CircleImageView myImage;
         TextView myTextView;
 
         ViewHolder(View itemView) {
             super(itemView);
+            myImage = itemView.findViewById(R.id.deviceImage);
             myTextView = itemView.findViewById(R.id.deviceName);
             itemView.setOnClickListener(this);
         }

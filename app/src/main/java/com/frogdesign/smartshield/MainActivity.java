@@ -6,6 +6,7 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.LayerDrawable;
@@ -33,6 +34,17 @@ import android.widget.Toolbar;
 
 import com.amazonaws.mobile.client.AWSMobileClient;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.github.mikephil.charting.charts.LineChart;
+import com.github.mikephil.charting.components.LimitLine;
+import com.github.mikephil.charting.components.YAxis;
+import com.github.mikephil.charting.data.Entry;
+import com.github.mikephil.charting.data.LineData;
+import com.github.mikephil.charting.data.LineDataSet;
+import com.github.mikephil.charting.interfaces.datasets.ILineDataSet;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
 
 import allbegray.slack.SlackClientFactory;
 import allbegray.slack.bot.SlackbotClient;
@@ -51,18 +63,18 @@ import allbegray.slack.webhook.SlackWebhookClient;
 public class MainActivity extends AppCompatActivity
         implements BottomNavigationView.OnNavigationItemSelectedListener {
 
-    // private View alertView;
+    private MyApplication application;
+
+    private View alertView;
     private Menu defaultMenu;
 
-    Fragment homeFragment;
+    HomeFragment homeFragment;
     Fragment devicesFragment;
     Fragment usersFragment;
 
     private  ViewPager viewPager;
     private MenuItem prevMenuItem;
     private BottomNavigationView navigation;
-
-    private Handler mHandler;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -71,9 +83,11 @@ public class MainActivity extends AppCompatActivity
 
         createNotificationChannel();
 
+        application = (MyApplication)this.getApplication();
+        application.state = R.color.colorSafe;
+
         ActionBar actionBar = getSupportActionBar();
         actionBar.setTitle("SmartShield");
-
         actionBar.setBackgroundDrawable(new ColorDrawable(getResources().getColor(R.color.colorSafe)));
         actionBar.setHomeButtonEnabled(true);
 
@@ -81,13 +95,11 @@ public class MainActivity extends AppCompatActivity
         navigation.setOnNavigationItemSelectedListener(this);
 
         LayoutInflater inflater = LayoutInflater.from(getApplicationContext());
-        // alertView = inflater.inflate(R.layout.alert_item, null);
+        alertView = inflater.inflate(R.layout.alert_item, null);
 
         AWSMobileClient.getInstance().initialize(this).execute();
 
-        mHandler = new Handler();
-
-        runSlack();
+        // runSlack();
 
 //        Bundle bundle = new Bundle();
 //        bundle.putString("traffic", "From Activity blabla");
@@ -95,19 +107,17 @@ public class MainActivity extends AppCompatActivity
         viewPager = findViewById(R.id.fragment_container);
         setupViewPager(viewPager);
 
-        sendNotification();
-
+        runNotification();
     }
 
-    private void setupViewPager(ViewPager viewPager)
-    {
+    private void setupViewPager(ViewPager viewPager) {
         ViewPagerAdapter adapter = new ViewPagerAdapter(getSupportFragmentManager());
         homeFragment = new HomeFragment();
         devicesFragment = new DevicesFragment();
-        usersFragment = new UsersFragment();
+        //usersFragment = new UsersFragment();
         adapter.addFragment(homeFragment);
         adapter.addFragment(devicesFragment);
-        adapter.addFragment(usersFragment);
+        //adapter.addFragment(usersFragment);
         viewPager.setAdapter(adapter);
 
         viewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
@@ -161,7 +171,7 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public boolean onPrepareOptionsMenu(Menu menu) {
-        setCount(this, "9");
+        setCount(this, "4");
         return true;
     }
 
@@ -189,6 +199,76 @@ public class MainActivity extends AppCompatActivity
     /*
     * Notification
     **/
+    public void runNotification() {
+        new Thread(new Runnable() {
+            public void run() {
+                Looper.prepare();
+                try {
+                    Thread.sleep(24000);
+                } catch (InterruptedException e) {
+                    return;
+                }
+
+                application.state = R.color.colorAlert;
+                getSupportActionBar().setBackgroundDrawable(new ColorDrawable(getResources().getColor(application.state)));
+
+                sendNotification();
+                showAlert();
+                Looper.loop();
+            }
+        }).start();
+    }
+
+    public void showAlert() {
+        final AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
+        final AlertDialog.Builder alertDialogBuilder1 = new AlertDialog.Builder(this);
+
+        LineChart mLineChart = alertView.findViewById(R.id.alert_chart);
+        LimitLine upper_limit = new LimitLine(60, "suspicious");
+        upper_limit.setLineWidth(2f);
+        upper_limit.enableDashedLine(10f, 10f, 0f);
+        upper_limit.setLabelPosition(LimitLine.LimitLabelPosition.RIGHT_TOP);
+        upper_limit.setTextSize(10f);
+        YAxis leftAxis = mLineChart.getAxisLeft();
+        leftAxis.removeAllLimitLines(); // reset all limit lines to avoid overlapping lines
+        leftAxis.addLimitLine(upper_limit);
+
+        LineData lineData = homeFragment.getChartData();
+        mLineChart.setData(lineData);
+
+        alertDialogBuilder.setMessage("Increased network activity on WyzeCam")
+                .setView(alertView)
+                .setCancelable(false)
+                .setNegativeButton("Block", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        homeFragment.setMeans(0);
+
+                        alertDialogBuilder1.setTitle("WyzeCam has been blocked")
+                                .setMessage("Next steps: \n 1. Change WyzeCam password \n 2. Change network password \n 3. Update firmware")
+                                .setNegativeButton("Got it", new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialog, int which) {
+                                        application.state = R.color.colorSafe;
+                                        getSupportActionBar().setBackgroundDrawable(new ColorDrawable(getResources().getColor(application.state)));
+                                        dialog.cancel();
+                                    }
+                                });
+                        AlertDialog alert1 = alertDialogBuilder1.create();
+                        alert1.show();
+                    }
+                })
+                .setPositiveButton("Dismiss", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.cancel();
+                    }
+                });
+        AlertDialog alert = alertDialogBuilder.create();
+        alert.setTitle("ALERT!");
+        alert.show();
+    }
+
     private final String CHANNEL_ID = "default";
     private void createNotificationChannel() {
         // Create the NotificationChannel, but only on API 26+ because
@@ -207,22 +287,17 @@ public class MainActivity extends AppCompatActivity
     }
 
     public void sendNotification() {
-
         // Create an explicit intent for an Activity in your app
         Intent intent = new Intent(this, MainActivity.class);
-        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
         PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent, 0);
 
-        //Get an instance of NotificationManager//
+        // Get an instance of NotificationManager
         NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(this, CHANNEL_ID)
                 .setSmallIcon(R.drawable.ic_notifications_black_24dp)
-                .setContentTitle("Alert Alert")
+                .setContentTitle("Alert")
                 .setStyle(new NotificationCompat.BigTextStyle()
-                        .bigText("Telegram:\n" +
-                                "New login. Dear Marisha, we detected a login into your account from a new device on 07/11/2018 at 15:55:21 UTC.\n" +
-                                "\n" +
-                                "Device: Desktop\n" +
-                                "Location: New York, United States (IP = 128.84.95.121)"))
+                        .bigText("We’ve noticed some unusual activity."))
                 .setPriority(NotificationCompat.PRIORITY_HIGH)
                 .setCategory(NotificationCompat.CATEGORY_ALARM)
                 .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
@@ -312,17 +387,11 @@ public class MainActivity extends AppCompatActivity
 
                 mRtmClient.connect();
                 mWebApiClient.postMessage("sandbox", "Hello from Android");
-                try {
-                    Thread.sleep(5000);
-                } catch (InterruptedException e) {
-                    return;
-                }
-                mWebApiClient.postMessage("sandbox", "Hello from Android");
+
                 Looper.loop();
             }
         }).start();
     }
-
 
 
     private boolean loadFragment(Fragment fragment) {
@@ -345,65 +414,10 @@ public class MainActivity extends AppCompatActivity
             case R.id.navigation_devices:
                 viewPager.setCurrentItem(1);
                 break;
-            case R.id.navigation_users:
-                viewPager.setCurrentItem(2);
-                break;
+//            case R.id.navigation_users:
+//                viewPager.setCurrentItem(2);
+//                break;
         }
         return false;
-//        Fragment fragment = null;
-//        switch (menuItem.getItemId()) {
-//            case R.id.navigation_activity:
-//                fragment = homeFragment;
-//                break;
-//            case R.id.navigation_devices:
-//                fragment = new DevicesFragment();
-//                break;
-//            case R.id.navigation_users:
-//                fragment = new UsersFragment();
-//                break;
-//            case R.id.navigation_more:
-//                //fragment = new MoreFragment();
-//
-//                final AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
-//                alertDialogBuilder.setMessage("Suspicious activity")
-//                        .setCancelable(false)
-//                        .setNegativeButton("Check", new DialogInterface.OnClickListener() {
-//                            @Override
-//                            public void onClick(DialogInterface dialog, int which) {
-//                                // loadFragment(new AlertFragment());
-//
-//                                alertDialogBuilder.setMessage("An unusual activity detected.\nIP address: 124.56.78.110\nLocation: New York, NY")
-//                                        .setView(alertView)
-//                                        .setCancelable(false)
-//                                        .setNegativeButton("Block user's access", new DialogInterface.OnClickListener() {
-//                                            @Override
-//                                            public void onClick(DialogInterface dialog, int which) {
-//                                                dialog.cancel();
-//                                            }
-//                                        })
-//                                        .setPositiveButton("Dismiss", new DialogInterface.OnClickListener() {
-//                                            @Override
-//                                            public void onClick(DialogInterface dialog, int which) {
-//                                                dialog.cancel();
-//                                            }
-//                                        });
-//                                AlertDialog alert1 = alertDialogBuilder.create();
-//                                alert1.setTitle("AT RISK");
-//                                alert1.show();
-//
-//                            }
-//                        })
-//                        .setPositiveButton("Dismiss", new DialogInterface.OnClickListener() {
-//                            @Override
-//                            public void onClick(DialogInterface dialog, int which) {
-//                                dialog.cancel();
-//                            }
-//                        });
-//                AlertDialog alert = alertDialogBuilder.create();
-//                alert.setTitle("ALERT!");
-//                alert.show();
-//                break;
-//        }
-//        return loadFragment(fragment);
     }
 }

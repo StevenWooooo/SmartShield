@@ -41,7 +41,7 @@ public class NotificationActivity extends AppCompatActivity implements RecyclerI
     private CoordinatorLayout coordinatorLayout;
 
     // url to fetch menu json
-    private static final String URL = "https://api.androidhive.info/json/menu.json";
+    // private static final String URL = "https://api.androidhive.info/json/menu.json";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -51,7 +51,9 @@ public class NotificationActivity extends AppCompatActivity implements RecyclerI
         getSupportActionBar().setDisplayShowTitleEnabled(false);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setDisplayShowHomeEnabled(true);
-        getSupportActionBar().setBackgroundDrawable(new ColorDrawable(getResources().getColor(R.color.colorSafe)));
+
+        MyApplication application = (MyApplication)this.getApplication();
+        getSupportActionBar().setBackgroundDrawable(new ColorDrawable(getResources().getColor(application.state)));
 
         recyclerView = findViewById(R.id.recycler_view);
         coordinatorLayout = findViewById(R.id.coordinator_layout);
@@ -79,35 +81,32 @@ public class NotificationActivity extends AppCompatActivity implements RecyclerI
      * method make volley network call and parses json
      */
     private void prepareCart() {
-        JsonArrayRequest request = new JsonArrayRequest(URL,
-                new Response.Listener<JSONArray>() {
-                    @Override
-                    public void onResponse(JSONArray response) {
-                        if (response == null) {
-                            Toast.makeText(getApplicationContext(), "Couldn't fetch the menu! Pleas try again.", Toast.LENGTH_LONG).show();
-                            return;
-                        }
+        cartList.clear();
 
-                        List<Item> items = new Gson().fromJson(response.toString(), new TypeToken<List<Item>>() {
-                        }.getType());
+        Item item = new Item();
+        item.name = "New device detected";
+        item.description = "Detected a login into your home network from a new device on November 13th at 6:30PM.";
+        item.thumbnail = "https://images-na.ssl-images-amazon.com/images/I/51TFnR7AtGL._SY300_QL70_.jpg";
+        cartList.add(item);
 
-                        // adding items to cart list
-                        cartList.clear();
-                        cartList.addAll(items);
+        item = new Item();
+        item.name = "Firmware updated needed";
+        item.description = "We’ve detected that you are using Wyzecam. A firmware update has been released – please connect your camera to your computer and complete the update to keep your network secure.";
+        item.thumbnail = "https://images-na.ssl-images-amazon.com/images/I/51H5U1Q8RRL._SX466_.jpg";
+        cartList.add(item);
 
-                        // refreshing recycler view
-                        mAdapter.notifyDataSetChanged();
-                    }
-                }, new Response.ErrorListener() {
-            @Override
-            public void onErrorResponse(VolleyError error) {
-                // error in getting json
-                Log.d(TAG, "Error: " + error.getMessage());
-                Toast.makeText(getApplicationContext(), "Error: " + error.getMessage(), Toast.LENGTH_SHORT).show();
-            }
-        });
+        item = new Item();
+        item.name = "Password update needed";
+        item.description = "It’s been 6 months since you changed your password. Please click here to update it.";
+        item.thumbnail = "https://cdn2.iconfinder.com/data/icons/lucid-generic/24/caution_alert_triangle_error_disabled-512.png";
+        cartList.add(item);
 
-        MyApplication.getInstance().addToRequestQueue(request);
+        item = new Item();
+        item.name = "Argo baby monitor hack";
+        item.description = "4 million Argo baby monitors were recently hacked. Please change your password.";
+        item.thumbnail = "https://store.storeimages.cdn-apple.com/4667/as-images.apple.com/is/image/AppleInc/aos/published/images/H/LG/HLGM2/HLGM2?wid=572&hei=572&fmt=jpeg&qlt=95&op_usm=0.5,0.5&.v=1519346194410";
+        cartList.add(item);
+
     }
 
     /**
@@ -130,7 +129,7 @@ public class NotificationActivity extends AppCompatActivity implements RecyclerI
 
             // showing snack bar with Undo option
             Snackbar snackbar = Snackbar
-                    .make(coordinatorLayout, name + " removed from cart!", Snackbar.LENGTH_LONG);
+                    .make(coordinatorLayout, "Please remember to check your security settings!", Snackbar.LENGTH_LONG);
             snackbar.setAction("UNDO", new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {

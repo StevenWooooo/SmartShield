@@ -52,7 +52,6 @@ public class CartListAdapter extends RecyclerView.Adapter<CartListAdapter.MyView
         final Item item = cartList.get(position);
         holder.name.setText(item.getName());
         holder.description.setText(item.getDescription());
-        holder.price.setText("₹" + item.getPrice());
 
         Glide.with(context)
                 .load(item.getThumbnail())
