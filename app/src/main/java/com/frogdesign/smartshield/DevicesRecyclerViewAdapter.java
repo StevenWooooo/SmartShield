@@ -6,6 +6,7 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -18,8 +19,8 @@ import de.hdodenhof.circleimageview.CircleImageView;
 
 public class DevicesRecyclerViewAdapter extends RecyclerView.Adapter<DevicesRecyclerViewAdapter.ViewHolder> {
 
-    private List<String> names = new ArrayList<>();
-    private List<String> imageUrls = new ArrayList<>();
+    private List<String> names;
+    private List<String> imageUrls;
     private Context context;
 
     public DevicesRecyclerViewAdapter(Context context, List<String> names, List<String> imageUrls) {
@@ -42,6 +43,9 @@ public class DevicesRecyclerViewAdapter extends RecyclerView.Adapter<DevicesRecy
                 .load(imageUrls.get(i))
                 .into(viewHolder.image);
         viewHolder.name.setText(names.get(i));
+        if (names.get(i).equals("WyzeCam")) {
+            viewHolder.icon.setImageResource(R.drawable.danger);
+        }
         viewHolder.image.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -58,9 +62,11 @@ public class DevicesRecyclerViewAdapter extends RecyclerView.Adapter<DevicesRecy
     public class ViewHolder extends RecyclerView.ViewHolder {
         CircleImageView image;
         TextView name;
+        ImageView icon;
 
         public ViewHolder(View itemView) {
             super(itemView);
+            icon = itemView.findViewById(R.id.status_icon);
             image = itemView.findViewById(R.id.device_image_view);
             name = itemView.findViewById(R.id.device_name);
         }

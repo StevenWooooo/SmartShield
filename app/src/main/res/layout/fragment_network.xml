@@ -12,44 +12,44 @@
         android:orientation="vertical"
         android:paddingTop="1dp">
 
-        <com.github.anastr.speedviewlib.SpeedView
-            android:id="@+id/speedView"
-            android:layout_width="250dp"
-            android:layout_height="120dp"
-            android:layout_gravity="center_horizontal"
-            android:layout_marginTop="20dp" />
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:text=" " />
 
         <TextView
-            android:id="@+id/gauge_title"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:gravity="center"
-            android:text="Network Security Status"
-            android:textAppearance="@style/TextAppearance.AppCompat.Title" />
-
-        <TextView
-            android:id="@+id/safe_title"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:gravity="center"
-            android:text="SAFE"
-            android:textSize="20dp" />
-
-        <TextView
-            android:id="@+id/platform"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="20dp"
             android:gravity="center"
             android:padding="10dp"
-            android:text="Current Devices"
+            android:text="Network Activity"
             android:textAppearance="@style/TextAppearance.AppCompat.Title" />
 
-        <android.support.v7.widget.RecyclerView
-            android:id="@+id/recycler_devices"
-            android:layout_width="wrap_content"
+        <com.github.mikephil.charting.charts.LineChart
+            android:id="@+id/chart"
+            android:layout_width="match_parent"
+            android:layout_height="256dp" />
+
+        <TextView
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"></android.support.v7.widget.RecyclerView>
+            android:gravity="center"
+            android:text="@string/chart_title" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:text="@string/explanation"
+            android:textSize="10dp" />
+
+        <TextView
+            android:id="@+id/learn_more"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="right"
+            android:text="@string/learn_more"
+            android:textSize="10dp" />
 
     </LinearLayout>
 

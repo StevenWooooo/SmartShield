@@ -70,11 +70,14 @@ public class MainActivity extends AppCompatActivity
 
     HomeFragment homeFragment;
     Fragment devicesFragment;
-    Fragment usersFragment;
+    NetworkFragment networkFragment;
 
     private  ViewPager viewPager;
     private MenuItem prevMenuItem;
     private BottomNavigationView navigation;
+
+    SlackWebApiClient mWebApiClient;
+    SlackRealTimeMessagingClient mRtmClient;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -99,26 +102,24 @@ public class MainActivity extends AppCompatActivity
 
         AWSMobileClient.getInstance().initialize(this).execute();
 
-        // runSlack();
+        runSlack();
 
-//        Bundle bundle = new Bundle();
-//        bundle.putString("traffic", "From Activity blabla");
-//        homeFragment.setArguments(bundle);
         viewPager = findViewById(R.id.fragment_container);
         setupViewPager(viewPager);
 
-        runNotification();
+        // runNotification();
     }
 
     private void setupViewPager(ViewPager viewPager) {
         ViewPagerAdapter adapter = new ViewPagerAdapter(getSupportFragmentManager());
         homeFragment = new HomeFragment();
         devicesFragment = new DevicesFragment();
-        //usersFragment = new UsersFragment();
+        networkFragment = new NetworkFragment();
         adapter.addFragment(homeFragment);
         adapter.addFragment(devicesFragment);
-        //adapter.addFragment(usersFragment);
+        adapter.addFragment(networkFragment);
         viewPager.setAdapter(adapter);
+        viewPager.setOffscreenPageLimit(2);
 
         viewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
             @Override
@@ -204,7 +205,7 @@ public class MainActivity extends AppCompatActivity
             public void run() {
                 Looper.prepare();
                 try {
-                    Thread.sleep(24000);
+                    Thread.sleep(24000); // look here
                 } catch (InterruptedException e) {
                     return;
                 }
@@ -228,12 +229,13 @@ public class MainActivity extends AppCompatActivity
         upper_limit.setLineWidth(2f);
         upper_limit.enableDashedLine(10f, 10f, 0f);
         upper_limit.setLabelPosition(LimitLine.LimitLabelPosition.RIGHT_TOP);
-        upper_limit.setTextSize(10f);
+        upper_limit.setTextSize(18f);
+        upper_limit.setTextColor(Color.RED);
         YAxis leftAxis = mLineChart.getAxisLeft();
         leftAxis.removeAllLimitLines(); // reset all limit lines to avoid overlapping lines
         leftAxis.addLimitLine(upper_limit);
 
-        LineData lineData = homeFragment.getChartData();
+        LineData lineData = networkFragment.getChartData();
         mLineChart.setData(lineData);
 
         alertDialogBuilder.setMessage("Increased network activity on WyzeCam")
@@ -242,8 +244,7 @@ public class MainActivity extends AppCompatActivity
                 .setNegativeButton("Block", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        homeFragment.setMeans(0);
-
+                        networkFragment.setMeans(0);
                         alertDialogBuilder1.setTitle("WyzeCam has been blocked")
                                 .setMessage("Next steps: \n 1. Change WyzeCam password \n 2. Change network password \n 3. Update firmware")
                                 .setNegativeButton("Got it", new DialogInterface.OnClickListener() {
@@ -256,6 +257,7 @@ public class MainActivity extends AppCompatActivity
                                 });
                         AlertDialog alert1 = alertDialogBuilder1.create();
                         alert1.show();
+                        mWebApiClient.postMessage("sandbox", "Block");
                     }
                 })
                 .setPositiveButton("Dismiss", new DialogInterface.OnClickListener() {
@@ -311,36 +313,27 @@ public class MainActivity extends AppCompatActivity
 
     void runSlack() {
         new Thread(new Runnable() {
-
-            SlackWebApiClient mWebApiClient;
-            SlackRealTimeMessagingClient mRtmClient;
-
             public void run() {
                 Looper.prepare();
                 mWebApiClient = SlackClientFactory.createWebApiClient(
                         "xoxb-425943026439-475474101397-vJHt9aRjQC6XEuYDxlpVagZS");
-                //SlackWebhookClient webhookClient = SlackClientFactory.createWebhookClient(
-                //        "https://hooks.slack.com/services/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");
-                //SlackbotClient slackbotClient = SlackClientFactory.createSlackbotClient(
-                //        "xoxb-425943026439-475474101397-vJHt9aRjQC6XEuYDxlpVagZS");
 
                 String webSocketUrl = mWebApiClient.startRealTimeMessagingApi().findPath("url").asText();
                 System.out.println("socket url = " + webSocketUrl );
                 mRtmClient = new SlackRealTimeMessagingClient(webSocketUrl);
 
-                mRtmClient.addListener(Event.HELLO, new EventListener() {
-                    @Override
-                    public void onMessage(JsonNode message) {
-                        Authentication authentication = mWebApiClient.auth();
-                        System.out.println("Team name: " + authentication.getTeam());
-                        System.out.println("User name: " + authentication.getUser());
-                    }
-                });
+//                mRtmClient.addListener(Event.HELLO, new EventListener() {
+//                    @Override
+//                    public void onMessage(JsonNode message) {
+//                        Authentication authentication = mWebApiClient.auth();
+//                        System.out.println("Team name: " + authentication.getTeam());
+//                        System.out.println("User name: " + authentication.getUser());
+//                    }
+//                });
 
                 mRtmClient.addListener(Event.MESSAGE, new EventListener() {
                     @Override
                     public void onMessage(JsonNode message) {
-                        System.out.println("File create");
                         String channelId = message.findPath("channel").asText();
                         String userId = message.findPath("user").asText();
                         String text = message.findPath("text").asText();
@@ -414,9 +407,9 @@ public class MainActivity extends AppCompatActivity
             case R.id.navigation_devices:
                 viewPager.setCurrentItem(1);
                 break;
-//            case R.id.navigation_users:
-//                viewPager.setCurrentItem(2);
-//                break;
+            case R.id.navigation_network:
+                viewPager.setCurrentItem(2);
+                break;
         }
         return false;
     }

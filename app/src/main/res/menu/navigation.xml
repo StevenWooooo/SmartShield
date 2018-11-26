@@ -12,9 +12,9 @@
         android:title="@string/title_devices" />
 
     <item
-        android:id="@+id/navigation_users"
-        android:icon="@drawable/ic_users"
-        android:title="@string/title_users" />
+        android:id="@+id/navigation_network"
+        android:icon="@drawable/ic_activity"
+        android:title="@string/title_network" />
 
     <item
         android:id="@+id/navigation_more"
