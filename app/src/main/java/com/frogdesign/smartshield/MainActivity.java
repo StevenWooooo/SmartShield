@@ -75,7 +75,7 @@ public class MainActivity extends AppCompatActivity
     private Menu defaultMenu;
 
     HomeFragment homeFragment;
-    Fragment devicesFragment;
+    DevicesFragment devicesFragment;
     NetworkFragment networkFragment;
 
     private  ViewPager viewPager;
@@ -130,30 +130,52 @@ public class MainActivity extends AppCompatActivity
     }
 
     private void setRetrofitClient() {
-        /** Create handle for the RetrofitInstance interface*/
         GetNoticeDataService service = RetrofitInstance.getRetrofitInstance().create(GetNoticeDataService.class);
 
-        /** Call the method with parameter in the interface to get the notice data*/
-        Call<NoticeList> call = service.getDeviceData();
+        new Thread(new Runnable() {
+            public void run() {
+                Looper.prepare();
 
-        /**Log the URL called*/
-        Log.wtf("URL Called", call.request().url() + "");
+                int i = 0;
+                while (i < 1000) {
+                    try {
+                        Thread.sleep(800);
+                    } catch (InterruptedException e) {
+                        return;
+                    }
 
-        call.enqueue(new Callback<NoticeList>() {
-            @Override
-            public void onResponse(Call<NoticeList> call, Response<NoticeList> response) {
-                for (Notice n : response.body().getNoticeArrayList()) {
-                    deviceNames.add(n.getName());
-                    System.out.println("device list: " + n.getName() + " " + n.getTraffic());
+                    Call<NoticeList> call = service.getDeviceData();
+
+                    call.enqueue(new Callback<NoticeList>() {
+                        @Override
+                        public void onResponse(Call<NoticeList> call, Response<NoticeList> response) {
+                            deviceNames = new ArrayList<>();
+                            for (Notice n : response.body().getNoticeArrayList()) {
+                                deviceNames.add(n.getName());
+                                System.out.println("device list: " + n.getName() + " " + n.getTraffic());
+                            }
+                        }
+
+                        @Override
+                        public void onFailure(Call<NoticeList> call, Throwable t) {
+                            System.out.println("Something went wrong...Error message: " + t.getMessage());
+                            Toast.makeText(MainActivity.this, "Network Error: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                        }
+                    });
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            homeFragment.refreshView();
+                            devicesFragment.refreshView();
+                        }
+                    });
+
+                    i++;
                 }
-            }
 
-            @Override
-            public void onFailure(Call<NoticeList> call, Throwable t) {
-                System.out.println("Something went wrong...Error message: " + t.getMessage());
-                Toast.makeText(MainActivity.this, "Network Error: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                Looper.loop();
             }
-        });
+        }).start();
     }
 
     private void setupViewPager(ViewPager viewPager) {

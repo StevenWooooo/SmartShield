@@ -30,6 +30,9 @@ public class HomeFragment extends Fragment {
     private List<String> names = new ArrayList<>();
     private List<String> imageUrls = new ArrayList<>();
 
+    public DevicesRecyclerViewAdapter adapter;
+    public RecyclerView recyclerView;
+
     void initDevices() {
         MainActivity mainActivity = (MainActivity) getActivity();
         for (String name : mainActivity.deviceNames) {
@@ -72,11 +75,24 @@ public class HomeFragment extends Fragment {
         initDevices();
         System.out.println("devices number = " + names.size());
         LinearLayoutManager layoutManager = new LinearLayoutManager(view.getContext(), LinearLayoutManager.HORIZONTAL, false);
-        RecyclerView recyclerView = view.findViewById(R.id.recycler_devices);
+        recyclerView = view.findViewById(R.id.recycler_devices);
         recyclerView.setLayoutManager(layoutManager);
-        DevicesRecyclerViewAdapter adapter = new DevicesRecyclerViewAdapter(view.getContext(), names, imageUrls);
+        adapter = new DevicesRecyclerViewAdapter(view.getContext(), names, imageUrls);
         recyclerView.setAdapter(adapter);
 
         return view;
+    }
+
+    public void refreshView() {
+        MainActivity mainActivity = (MainActivity) getActivity();
+        names = new ArrayList<>();
+        imageUrls = new ArrayList<>();
+        for (String name : mainActivity.deviceNames) {
+            names.add(name);
+            imageUrls.add(mainActivity.name2url.get(name));
+        }
+        adapter = new DevicesRecyclerViewAdapter(this.getContext(), names, imageUrls);
+        recyclerView.setAdapter(adapter);
+        recyclerView.invalidate();
     }
 }

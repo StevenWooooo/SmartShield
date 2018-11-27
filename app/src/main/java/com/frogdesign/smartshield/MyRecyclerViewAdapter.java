@@ -21,7 +21,6 @@ import de.hdodenhof.circleimageview.CircleImageView;
 
 public class MyRecyclerViewAdapter extends RecyclerView.Adapter<MyRecyclerViewAdapter.ViewHolder> {
     private List<String> mData;
-    private List<String> mStatus;
     private LayoutInflater mInflater;
     private ItemClickListener mClickListener;
 
@@ -30,10 +29,9 @@ public class MyRecyclerViewAdapter extends RecyclerView.Adapter<MyRecyclerViewAd
     public Map<String, String> name2url = new HashMap<>();
 
     // data is passed into the constructor
-    MyRecyclerViewAdapter(Context context, List<String> data, List<String> status) {
+    MyRecyclerViewAdapter(Context context, List<String> data) {
         this.mInflater = LayoutInflater.from(context);
         this.mData = data;
-        this.mStatus = status;
         this.context = context;
 
         name2url.put("MacBook Pro", "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ2mWFoSbenRKHNP8Akv75PTExe88EmDMLDuuv1HNkTION4pGadOw");
@@ -58,9 +56,11 @@ public class MyRecyclerViewAdapter extends RecyclerView.Adapter<MyRecyclerViewAd
                 .load(name2url.get(mData.get(position)))
                 .into(holder.myImage);
         holder.myTextView.setText(mData.get(position));
-        holder.myStatus.setText(mStatus.get(position));
-        if (mStatus.get(position).equals("unsecured")) {
+        if (mData.get(position).equals("WyzeCam")) {
+            holder.myStatus.setText("unsecured");
             holder.myStatus.setTextColor(Color.RED);
+        } else {
+            holder.myStatus.setText("secure");
         }
 
         holder.myImage.setOnClickListener(new View.OnClickListener() {

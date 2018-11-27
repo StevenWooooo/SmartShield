@@ -13,10 +13,12 @@ import android.view.ViewGroup;
 import android.widget.Toast;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class DevicesFragment extends Fragment implements MyRecyclerViewAdapter.ItemClickListener {
 
-    MyRecyclerViewAdapter adapter;
+    public MyRecyclerViewAdapter adapter;
+    public RecyclerView recyclerView;
 
     @Nullable
     @Override
@@ -25,28 +27,24 @@ public class DevicesFragment extends Fragment implements MyRecyclerViewAdapter.I
 
         super.onCreate(savedInstanceState);
 
-        // data to populate the RecyclerView with
-        ArrayList<String> deviceNames = new ArrayList<>();
-
         MainActivity mainActivity = (MainActivity) getActivity();
-        ArrayList<String> status = new ArrayList<>();
-        for (String name : mainActivity.deviceNames) {
-            deviceNames.add(name);
-            if (name.equals("WyzeCam")) {
-                status.add("unsecured");
-            } else {
-                status.add("secure");
-            }
-        }
+        List<String> deviceNames = mainActivity.deviceNames;
 
-        // set up the RecyclerView
-        RecyclerView recyclerView = view.findViewById(R.id.recycler_view);
+                // set up the RecyclerView
+        recyclerView = view.findViewById(R.id.recycler_view);
         recyclerView.setLayoutManager(new LinearLayoutManager(this.getContext()));
-        adapter = new MyRecyclerViewAdapter(this.getContext(), deviceNames, status);
+        adapter = new MyRecyclerViewAdapter(this.getContext(), deviceNames);
         adapter.setClickListener(this);
         recyclerView.setAdapter(adapter);
 
         return view;
+    }
+
+    public void refreshView() {
+        MainActivity mainActivity = (MainActivity) getActivity();
+        adapter = new MyRecyclerViewAdapter(this.getContext(), mainActivity.deviceNames);
+        recyclerView.setAdapter(adapter);
+        recyclerView.invalidate();
     }
 
     @Override
