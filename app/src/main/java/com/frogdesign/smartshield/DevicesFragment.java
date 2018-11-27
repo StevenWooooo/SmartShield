@@ -27,16 +27,17 @@ public class DevicesFragment extends Fragment implements MyRecyclerViewAdapter.I
 
         // data to populate the RecyclerView with
         ArrayList<String> deviceNames = new ArrayList<>();
-        deviceNames.add("MacBook Pro");
-        deviceNames.add("Alexa");
-        deviceNames.add("Wyze");
-        deviceNames.add("iPhone X");
 
+        MainActivity mainActivity = (MainActivity) getActivity();
         ArrayList<String> status = new ArrayList<>();
-        status.add("secure");
-        status.add("secure");
-        status.add("unsecured");
-        status.add("secure");
+        for (String name : mainActivity.deviceNames) {
+            deviceNames.add(name);
+            if (name.equals("WyzeCam")) {
+                status.add("unsecured");
+            } else {
+                status.add("secure");
+            }
+        }
 
         // set up the RecyclerView
         RecyclerView recyclerView = view.findViewById(R.id.recycler_view);

@@ -13,7 +13,9 @@ import android.widget.Toast;
 import com.bumptech.glide.Glide;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 
@@ -25,12 +27,20 @@ public class MyRecyclerViewAdapter extends RecyclerView.Adapter<MyRecyclerViewAd
 
     private Context context;
 
+    public Map<String, String> name2url = new HashMap<>();
+
     // data is passed into the constructor
     MyRecyclerViewAdapter(Context context, List<String> data, List<String> status) {
         this.mInflater = LayoutInflater.from(context);
         this.mData = data;
         this.mStatus = status;
         this.context = context;
+
+        name2url.put("MacBook Pro", "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ2mWFoSbenRKHNP8Akv75PTExe88EmDMLDuuv1HNkTION4pGadOw");
+        name2url.put("Alexa", "https://images-na.ssl-images-amazon.com/images/I/51TFnR7AtGL._SY300_QL70_.jpg");
+        name2url.put("WyzeCam", "https://images-na.ssl-images-amazon.com/images/I/31pBkWRliML.jpg");
+        name2url.put("iPhone X", "https://static.mts.rs/GALERIJA/MOBILNI%20TELEFONI/IPHONE/IPHONE%20X/iPhone_X_1_popup_1500x1500px.jpg");
+
     }
 
     // inflates the row layout from xml when needed
@@ -43,15 +53,9 @@ public class MyRecyclerViewAdapter extends RecyclerView.Adapter<MyRecyclerViewAd
     // binds the data to the TextView in each row
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
-        List<String> urls = new ArrayList<>();
-        urls.add("https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ2mWFoSbenRKHNP8Akv75PTExe88EmDMLDuuv1HNkTION4pGadOw");
-        urls.add("https://images-na.ssl-images-amazon.com/images/I/51TFnR7AtGL._SY300_QL70_.jpg");
-        urls.add("https://images-na.ssl-images-amazon.com/images/I/31pBkWRliML.jpg");
-        urls.add("https://static.mts.rs/GALERIJA/MOBILNI%20TELEFONI/IPHONE/IPHONE%20X/iPhone_X_1_popup_1500x1500px.jpg");
-
         Glide.with(context)
                 .asBitmap()
-                .load(urls.get(position))
+                .load(name2url.get(mData.get(position)))
                 .into(holder.myImage);
         holder.myTextView.setText(mData.get(position));
         holder.myStatus.setText(mStatus.get(position));

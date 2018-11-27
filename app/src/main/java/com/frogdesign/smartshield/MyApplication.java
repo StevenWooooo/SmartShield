@@ -9,7 +9,9 @@ import com.android.volley.toolbox.Volley;
 import com.github.mikephil.charting.data.LineData;
 import com.github.mikephil.charting.interfaces.datasets.ILineDataSet;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class MyApplication extends Application {
 

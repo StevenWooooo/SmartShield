@@ -20,24 +20,9 @@ import android.widget.TextView;
 
 import com.github.anastr.speedviewlib.SpeedView;
 import com.github.anastr.speedviewlib.components.Indicators.Indicator;
-import com.github.mikephil.charting.charts.LineChart;
-import com.github.mikephil.charting.components.AxisBase;
-import com.github.mikephil.charting.components.Legend;
-import com.github.mikephil.charting.components.LimitLine;
-import com.github.mikephil.charting.components.XAxis;
-import com.github.mikephil.charting.components.YAxis;
-import com.github.mikephil.charting.data.Entry;
-import com.github.mikephil.charting.data.LineData;
-import com.github.mikephil.charting.data.LineDataSet;
-import com.github.mikephil.charting.formatter.IAxisValueFormatter;
-import com.github.mikephil.charting.interfaces.datasets.ILineDataSet;
-import com.github.mikephil.charting.utils.ColorTemplate;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
-
-import static com.amazonaws.mobile.auth.core.internal.util.ThreadUtils.runOnUiThread;
 
 
 public class HomeFragment extends Fragment {
@@ -46,17 +31,11 @@ public class HomeFragment extends Fragment {
     private List<String> imageUrls = new ArrayList<>();
 
     void initDevices() {
-        names.add("MacBook Pro");
-        imageUrls.add("https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ2mWFoSbenRKHNP8Akv75PTExe88EmDMLDuuv1HNkTION4pGadOw");
-
-        names.add("Alexa");
-        imageUrls.add("https://images-na.ssl-images-amazon.com/images/I/51TFnR7AtGL._SY300_QL70_.jpg");
-
-        names.add("WyzeCam");
-        imageUrls.add("https://images-na.ssl-images-amazon.com/images/I/31pBkWRliML.jpg");
-
-        names.add("iPhone X");
-        imageUrls.add("https://static.mts.rs/GALERIJA/MOBILNI%20TELEFONI/IPHONE/IPHONE%20X/iPhone_X_1_popup_1500x1500px.jpg");
+        MainActivity mainActivity = (MainActivity) getActivity();
+        for (String name : mainActivity.deviceNames) {
+            names.add(name);
+            imageUrls.add(mainActivity.name2url.get(name));
+        }
     }
 
     @Nullable

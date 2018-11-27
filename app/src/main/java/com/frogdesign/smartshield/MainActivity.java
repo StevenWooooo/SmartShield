@@ -43,7 +43,9 @@ import com.github.mikephil.charting.data.LineDataSet;
 import com.github.mikephil.charting.interfaces.datasets.ILineDataSet;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 
 import allbegray.slack.SlackClientFactory;
@@ -59,6 +61,10 @@ import allbegray.slack.type.Channel;
 import allbegray.slack.type.User;
 import allbegray.slack.webapi.SlackWebApiClient;
 import allbegray.slack.webhook.SlackWebhookClient;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class MainActivity extends AppCompatActivity
         implements BottomNavigationView.OnNavigationItemSelectedListener {
@@ -79,6 +85,9 @@ public class MainActivity extends AppCompatActivity
     SlackWebApiClient mWebApiClient;
     SlackRealTimeMessagingClient mRtmClient;
 
+    public Map<String, String> name2url = new HashMap<>();
+    public List<String> deviceNames = new ArrayList<>();
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -97,17 +106,54 @@ public class MainActivity extends AppCompatActivity
         navigation = findViewById(R.id.navigation);
         navigation.setOnNavigationItemSelectedListener(this);
 
+        setRetrofitClient();
+        initMap();
+
         LayoutInflater inflater = LayoutInflater.from(getApplicationContext());
         alertView = inflater.inflate(R.layout.alert_item, null);
 
-        AWSMobileClient.getInstance().initialize(this).execute();
+        // AWSMobileClient.getInstance().initialize(this).execute();
 
-        runSlack();
+        // runSlack();
 
         viewPager = findViewById(R.id.fragment_container);
         setupViewPager(viewPager);
 
         // runNotification();
+    }
+
+    private void initMap() {
+        name2url.put("MacBook", "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ2mWFoSbenRKHNP8Akv75PTExe88EmDMLDuuv1HNkTION4pGadOw");
+        name2url.put("Alexa", "https://images-na.ssl-images-amazon.com/images/I/51TFnR7AtGL._SY300_QL70_.jpg");
+        name2url.put("WyzeCam", "https://images-na.ssl-images-amazon.com/images/I/31pBkWRliML.jpg");
+        name2url.put("iPhone X", "https://static.mts.rs/GALERIJA/MOBILNI%20TELEFONI/IPHONE/IPHONE%20X/iPhone_X_1_popup_1500x1500px.jpg");
+    }
+
+    private void setRetrofitClient() {
+        /** Create handle for the RetrofitInstance interface*/
+        GetNoticeDataService service = RetrofitInstance.getRetrofitInstance().create(GetNoticeDataService.class);
+
+        /** Call the method with parameter in the interface to get the notice data*/
+        Call<NoticeList> call = service.getDeviceData();
+
+        /**Log the URL called*/
+        Log.wtf("URL Called", call.request().url() + "");
+
+        call.enqueue(new Callback<NoticeList>() {
+            @Override
+            public void onResponse(Call<NoticeList> call, Response<NoticeList> response) {
+                for (Notice n : response.body().getNoticeArrayList()) {
+                    deviceNames.add(n.getName());
+                    System.out.println("device list: " + n.getName() + " " + n.getTraffic());
+                }
+            }
+
+            @Override
+            public void onFailure(Call<NoticeList> call, Throwable t) {
+                System.out.println("Something went wrong...Error message: " + t.getMessage());
+                Toast.makeText(MainActivity.this, "Network Error: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
     private void setupViewPager(ViewPager viewPager) {
