@@ -34,6 +34,8 @@ import android.widget.Toolbar;
 
 import com.amazonaws.mobile.client.AWSMobileClient;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.github.anastr.speedviewlib.SpeedView;
+import com.github.anastr.speedviewlib.components.Indicators.Indicator;
 import com.github.mikephil.charting.charts.LineChart;
 import com.github.mikephil.charting.components.LimitLine;
 import com.github.mikephil.charting.components.YAxis;
@@ -82,9 +84,6 @@ public class MainActivity extends AppCompatActivity
     private MenuItem prevMenuItem;
     private BottomNavigationView navigation;
 
-    SlackWebApiClient mWebApiClient;
-    SlackRealTimeMessagingClient mRtmClient;
-
     public Map<String, String> name2url = new HashMap<>();
     public List<String> deviceNames = new ArrayList<>();
 
@@ -114,12 +113,8 @@ public class MainActivity extends AppCompatActivity
 
         // AWSMobileClient.getInstance().initialize(this).execute();
 
-        // runSlack();
-
         viewPager = findViewById(R.id.fragment_container);
         setupViewPager(viewPager);
-
-        // runNotification();
     }
 
     private void initMap() {
@@ -159,7 +154,7 @@ public class MainActivity extends AppCompatActivity
                         @Override
                         public void onFailure(Call<NoticeList> call, Throwable t) {
                             System.out.println("Something went wrong...Error message: " + t.getMessage());
-                            Toast.makeText(MainActivity.this, "Network Error: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                            Toast.makeText(MainActivity.this, "Network Error: cannot connect to the server", Toast.LENGTH_SHORT).show();
                         }
                     });
                     runOnUiThread(new Runnable() {
@@ -273,16 +268,24 @@ public class MainActivity extends AppCompatActivity
             public void run() {
                 Looper.prepare();
                 try {
-                    Thread.sleep(24000); // look here
+                    Thread.sleep(15000); // look here
                 } catch (InterruptedException e) {
                     return;
                 }
 
-                application.state = R.color.colorAlert;
-                getSupportActionBar().setBackgroundDrawable(new ColorDrawable(getResources().getColor(application.state)));
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        homeFragment.speedometer.speedTo(20, 2000);
+                        application.state = R.color.colorAlert;
+                        getSupportActionBar().setBackgroundDrawable(new ColorDrawable(getResources().getColor(application.state)));
+
+                    }
+                });
 
                 sendNotification();
                 showAlert();
+
                 Looper.loop();
             }
         }).start();
@@ -292,20 +295,6 @@ public class MainActivity extends AppCompatActivity
         final AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
         final AlertDialog.Builder alertDialogBuilder1 = new AlertDialog.Builder(this);
 
-        LineChart mLineChart = alertView.findViewById(R.id.alert_chart);
-        LimitLine upper_limit = new LimitLine(60, "suspicious");
-        upper_limit.setLineWidth(2f);
-        upper_limit.enableDashedLine(10f, 10f, 0f);
-        upper_limit.setLabelPosition(LimitLine.LimitLabelPosition.RIGHT_TOP);
-        upper_limit.setTextSize(18f);
-        upper_limit.setTextColor(Color.RED);
-        YAxis leftAxis = mLineChart.getAxisLeft();
-        leftAxis.removeAllLimitLines(); // reset all limit lines to avoid overlapping lines
-        leftAxis.addLimitLine(upper_limit);
-
-        LineData lineData = networkFragment.getChartData();
-        mLineChart.setData(lineData);
-
         alertDialogBuilder.setMessage("Increased network activity on WyzeCam")
                 .setView(alertView)
                 .setCancelable(false)
@@ -313,19 +302,25 @@ public class MainActivity extends AppCompatActivity
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         networkFragment.setMeans(0);
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                homeFragment.speedometer.speedTo(77, 4000);
+                                application.state = R.color.colorSafe;
+                                getSupportActionBar().setBackgroundDrawable(new ColorDrawable(getResources().getColor(application.state)));
+
+                            }
+                        });
                         alertDialogBuilder1.setTitle("WyzeCam has been blocked")
                                 .setMessage("Next steps: \n 1. Change WyzeCam password \n 2. Change network password \n 3. Update firmware")
                                 .setNegativeButton("Got it", new DialogInterface.OnClickListener() {
                                     @Override
                                     public void onClick(DialogInterface dialog, int which) {
-                                        application.state = R.color.colorSafe;
-                                        getSupportActionBar().setBackgroundDrawable(new ColorDrawable(getResources().getColor(application.state)));
                                         dialog.cancel();
                                     }
                                 });
                         AlertDialog alert1 = alertDialogBuilder1.create();
                         alert1.show();
-                        mWebApiClient.postMessage("sandbox", "Block");
                     }
                 })
                 .setPositiveButton("Dismiss", new DialogInterface.OnClickListener() {
@@ -379,82 +374,6 @@ public class MainActivity extends AppCompatActivity
     }
 
 
-    void runSlack() {
-        new Thread(new Runnable() {
-            public void run() {
-                Looper.prepare();
-                mWebApiClient = SlackClientFactory.createWebApiClient(
-                        "xoxb-425943026439-475474101397-vJHt9aRjQC6XEuYDxlpVagZS");
-
-                String webSocketUrl = mWebApiClient.startRealTimeMessagingApi().findPath("url").asText();
-                System.out.println("socket url = " + webSocketUrl );
-                mRtmClient = new SlackRealTimeMessagingClient(webSocketUrl);
-
-//                mRtmClient.addListener(Event.HELLO, new EventListener() {
-//                    @Override
-//                    public void onMessage(JsonNode message) {
-//                        Authentication authentication = mWebApiClient.auth();
-//                        System.out.println("Team name: " + authentication.getTeam());
-//                        System.out.println("User name: " + authentication.getUser());
-//                    }
-//                });
-
-                mRtmClient.addListener(Event.MESSAGE, new EventListener() {
-                    @Override
-                    public void onMessage(JsonNode message) {
-                        String channelId = message.findPath("channel").asText();
-                        String userId = message.findPath("user").asText();
-                        String text = message.findPath("text").asText();
-
-                        if (userId != null) {
-                            Channel channel;
-                            try {
-                                channel = mWebApiClient.getChannelInfo(channelId);
-                            } catch (SlackResponseErrorException e) {
-                                channel = null;
-                            }
-                            User user = mWebApiClient.getUserInfo(userId);
-                            String userName = user.getName();
-
-                            System.out.println("Channel id: " + channelId);
-                            System.out.println("Channel name: " + (channel != null ? "#" + channel.getName() : "DM"));
-                            System.out.println("User id: " + userId);
-                            System.out.println("User name: " + userName);
-                            System.out.println("Text: " + text);
-
-                            // Copy cat
-                            mWebApiClient.meMessage(channelId, userName + ": " + text);
-                        }
-                    }
-                });
-
-                mRtmClient.addCloseListener(new CloseListener() {
-
-                    @Override
-                    public void onClose() {
-                        System.out.println("Connection closed");
-                    }
-                });
-
-                mRtmClient.addFailureListener(new FailureListener() {
-
-                    @Override
-                    public void onFailure(Throwable t) {
-                        Exception e = (Exception) t;
-
-                        System.out.println("Failure message: " + e.getMessage());
-                    }
-                });
-
-                mRtmClient.connect();
-                mWebApiClient.postMessage("sandbox", "Hello from Android");
-
-                Looper.loop();
-            }
-        }).start();
-    }
-
-
     private boolean loadFragment(Fragment fragment) {
         if (fragment != null) {
             getSupportFragmentManager()
@@ -478,6 +397,8 @@ public class MainActivity extends AppCompatActivity
             case R.id.navigation_network:
                 viewPager.setCurrentItem(2);
                 break;
+            case R.id.navigation_more:
+                runNotification();
         }
         return false;
     }

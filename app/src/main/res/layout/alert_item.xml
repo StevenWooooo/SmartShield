@@ -3,9 +3,10 @@
 android:layout_width="match_parent"
 android:layout_height="wrap_content">
 
-    <com.github.mikephil.charting.charts.LineChart
-        android:id="@+id/alert_chart"
+    <ImageView
         android:layout_width="match_parent"
-        android:layout_height="256dp" />
+        android:layout_height="200dp"
+        android:src="@drawable/danger_state"
+        android:layout_gravity="center"/>
 
 </LinearLayout>

@@ -142,7 +142,7 @@ public class NetworkFragment extends Fragment {
             if (set == null) {
                 set = createSet();
                 data.addDataSet(set);
-                for (int i = 0; i < 40; ++i) {
+                for (int i = 0; i < 100; ++i) {
                     data.addEntry(new Entry(i, 0), 0);
                 }
             }
@@ -164,7 +164,7 @@ public class NetworkFragment extends Fragment {
 
             if (moveToLastEntry) {
                 // move to the latest entry
-                mChart.setVisibleXRangeMaximum(40);
+                mChart.setVisibleXRangeMaximum(100);
                 mChart.moveViewToX(data.getEntryCount());
             }
 

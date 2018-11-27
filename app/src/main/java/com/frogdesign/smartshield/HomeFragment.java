@@ -19,6 +19,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.github.anastr.speedviewlib.SpeedView;
+import com.github.anastr.speedviewlib.Speedometer;
 import com.github.anastr.speedviewlib.components.Indicators.Indicator;
 
 import java.util.ArrayList;
@@ -32,6 +33,8 @@ public class HomeFragment extends Fragment {
 
     public DevicesRecyclerViewAdapter adapter;
     public RecyclerView recyclerView;
+
+    public SpeedView speedometer;
 
     void initDevices() {
         MainActivity mainActivity = (MainActivity) getActivity();
@@ -51,7 +54,7 @@ public class HomeFragment extends Fragment {
 //        TextView test = view.findViewById(R.id.test_seg);
 //        test.setText(strtext);
 
-        SpeedView speedometer = view.findViewById(R.id.speedView);
+        speedometer = view.findViewById(R.id.speedView);
         speedometer.speedTo(80, 4000);
         speedometer.setMarkColor(Color.argb(0,0,0,0));
         speedometer.setCenterCircleColor(Color.argb(0,0,0,0));
