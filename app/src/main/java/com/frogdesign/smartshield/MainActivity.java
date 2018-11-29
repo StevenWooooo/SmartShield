@@ -131,6 +131,8 @@ public class MainActivity extends AppCompatActivity
             public void run() {
                 Looper.prepare();
 
+                int pre = 0;
+
                 int i = 0;
                 while (i < 1000) {
                     try {
@@ -157,15 +159,19 @@ public class MainActivity extends AppCompatActivity
                             Toast.makeText(MainActivity.this, "Network Error: cannot connect to the server", Toast.LENGTH_SHORT).show();
                         }
                     });
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            homeFragment.refreshView();
-                            devicesFragment.refreshView();
-                        }
-                    });
 
-                    i++;
+                    if (deviceNames.size() != pre) {
+                        pre = deviceNames.size();
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                homeFragment.refreshView();
+                                devicesFragment.refreshView();
+                            }
+                        });
+
+                        i++;
+                    }
                 }
 
                 Looper.loop();
